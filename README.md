@@ -1,4 +1,4 @@
-# Carrot in a Box - Dockerized Full Stack
+# Carrot in a Box
 
 Monorepo services:
 - `apps/web`: Next.js frontend
