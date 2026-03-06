@@ -47,6 +47,18 @@ Equivalent command:
 docker compose -f docker-compose.dev.yml up --build
 ```
 
+## Make Commands
+
+Use the root [Makefile](/Users/c/ai/carrot-in-a-box-ai/Makefile):
+
+```bash
+make help
+make up
+make dev-hot
+make migrate
+make logs
+```
+
 ## API
 
 - `POST /api/game/start`

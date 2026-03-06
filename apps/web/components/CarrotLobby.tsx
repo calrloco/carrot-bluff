@@ -15,11 +15,11 @@ import {
 } from '@/lib/api';
 import { saveActiveGame } from '@/lib/active-game';
 
-type StartStage = 'CHECKING' | 'READY' | 'DAILY_DONE';
+type StartStage = 'READY' | 'DAILY_DONE';
 
 export default function CarrotLobby() {
   const router = useRouter();
-  const [stage, setStage] = useState<StartStage>('CHECKING');
+  const [stage, setStage] = useState<StartStage>('READY');
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [handle, setHandle] = useState('');
   const [handleDraft, setHandleDraft] = useState('');
@@ -71,7 +71,7 @@ export default function CarrotLobby() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await updateHandle(sessionToken, handleDraft);
+      const res = await updateHandle(sessionwToken, handleDraft);
       setHandle(res.handle);
       setHandleDraft(res.handle);
       setIsEditingHandle(false);
@@ -169,13 +169,11 @@ export default function CarrotLobby() {
               </div>
             </div>
 
-            {stage === 'CHECKING' ? (
-              <div className="px-12 py-6 bg-black text-white text-2xl font-display font-black uppercase border-4 border-black">Loading Session...</div>
-            ) : stage === 'READY' ? (
+            {stage === 'READY' ? (
               <button
                 onClick={() => void continueFlow()}
                 disabled={isLoading || !sessionToken}
-                className="px-12 py-6 hover:text-white text-white text-2xl font-display font-black uppercase hover:bg-[#00FF00] hover:text-black transition-all border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50"
+                className="px-12 py-6 bg-black text-white text-2xl font-display font-black uppercase hover:bg-[#00FF00] hover:text-black transition-all border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50"
               >
                 {isLoading ? 'Checking Daily...' : 'Continue'}
               </button>
