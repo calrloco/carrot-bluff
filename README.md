@@ -6,6 +6,15 @@ Monorepo services:
 - `db`: Postgres
 - `ollama`: local LLM runtime
 
+## Game Overview
+
+`Carrot in a Box` is a bluff game between you and the AI:
+- There are 2 boxes, but only 1 carrot.
+- A scenario is generated (`AI_KNOWS` or `PLAYER_KNOWS`) and a turn limit (3-5).
+- You chat/bluff for a few turns.
+- Final decision is `keep` or `switch` (by you or AI, depending on scenario).
+- Win condition is computed by backend from the final choice and carrot position.
+
 ## Environment variables
 
 Backend (`apps/api`):
@@ -32,6 +41,26 @@ Frontend (`apps/web`):
 3. Open:
 - Web: http://localhost:3000
 - API docs: http://localhost:8000/docs
+
+## Give More Resources To The Model
+
+1. Increase CPU/RAM available to Docker Desktop (host-level).
+2. Increase `ollama` service resources in compose files:
+```yaml
+ollama:
+  cpus: 8
+  # optionally also set memory:
+  mem_limit: 12g
+```
+3. Use a larger model (optional):
+```bash
+OLLAMA_MODEL=qwen2.5:7b ./scripts/dev.sh
+./scripts/pull-model.sh qwen2.5:7b
+```
+
+Notes:
+- Edit both [`docker-compose.yml`](/Users/c/ai/carrot-in-a-box-ai/docker-compose.yml) and [`docker-compose.dev.yml`](/Users/c/ai/carrot-in-a-box-ai/docker-compose.dev.yml) if you use both modes.
+- Larger models need more RAM/VRAM and will run slower if resources are insufficient.
 
 ## Container Dev Mode (Hot Reload)
 
