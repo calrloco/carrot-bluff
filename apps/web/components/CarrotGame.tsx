@@ -176,12 +176,14 @@ export default function CarrotGame() {
   const board = mode === 'daily' ? dailyBoard : infiniteBoard;
   const aiBoxIndicator = role === 'AI_KNOWS' ? '🔒' : '📦';
   const playerBoxIndicator = role === 'PLAYER_KNOWS' ? (playerBoxHasCarrot ? '🥕' : '🕳️') : '📦';
+  const finalAiHasCarrot =
+    result && (result.finalChoice === 'switch' ? !result.aiHadCarrot : result.aiHadCarrot);
   const outcomeSummary =
     result &&
     (() => {
       const actor = result.decider === 'ai' ? 'AI' : 'You';
       const action = result.finalChoice === 'switch' ? 'switched' : 'kept';
-      const whoHasCarrot = result.aiHadCarrot ? 'AI' : 'you';
+      const whoHasCarrot = finalAiHasCarrot ? 'AI' : 'you';
       const winLoss = result.didWin ? 'You won.' : 'You lost.';
       return `${actor} ${action}. Final carrot owner: ${whoHasCarrot}. ${winLoss}`;
     })();
@@ -273,8 +275,8 @@ export default function CarrotGame() {
               <motion.div key="reveal" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center w-full max-w-2xl">
                 <div className={`text-4xl md:text-6xl font-display font-black uppercase mb-8 p-4 border-4 border-black inline-block ${result.didWin ? 'bg-[#00FF00]' : 'bg-red-500 text-white'}`}>{result.didWin ? 'You Won!' : 'AI Won!'}</div>
                 <div className="grid grid-cols-2 gap-8 mb-8">
-                  <div className="flex flex-col items-center"><div className="text-xs font-mono font-bold uppercase mb-2">AI&apos;s Box</div><div className={`w-full aspect-square border-4 border-black flex items-center justify-center text-8xl ${result.aiHadCarrot ? 'bg-orange-50' : 'bg-stone-200'}`}>{result.aiHadCarrot ? '🥕' : '🕳️'}</div></div>
-                  <div className="flex flex-col items-center"><div className="text-xs font-mono font-bold uppercase mb-2">Your Box</div><div className={`w-full aspect-square border-4 border-black flex items-center justify-center text-8xl ${!result.aiHadCarrot ? 'bg-orange-50' : 'bg-stone-200'}`}>{!result.aiHadCarrot ? '🥕' : '🕳️'}</div></div>
+                  <div className="flex flex-col items-center"><div className="text-xs font-mono font-bold uppercase mb-2">AI&apos;s Box</div><div className={`w-full aspect-square border-4 border-black flex items-center justify-center text-8xl ${finalAiHasCarrot ? 'bg-orange-50' : 'bg-stone-200'}`}>{finalAiHasCarrot ? '🥕' : '🕳️'}</div></div>
+                  <div className="flex flex-col items-center"><div className="text-xs font-mono font-bold uppercase mb-2">Your Box</div><div className={`w-full aspect-square border-4 border-black flex items-center justify-center text-8xl ${!finalAiHasCarrot ? 'bg-orange-50' : 'bg-stone-200'}`}>{!finalAiHasCarrot ? '🥕' : '🕳️'}</div></div>
                 </div>
                 <div className="mb-8 border-2 border-black bg-stone-50 p-4 font-mono text-xs text-left">
                   <p className="font-bold uppercase mb-2">What Happened</p>

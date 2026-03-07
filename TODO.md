@@ -8,14 +8,14 @@ Rules:
 
 ### Frontend Refactor
 
-- [x] Replace `mode=""` UI switching with Next.js route-based navigation.
-  Route explanation:
-    - `/`:
-        - Purpose: waiting/lobby view.
-        - Must represent current `mode="wait"` behavior.
-    - `/game`:
-        - Purpose: game chat/play view.
-        - Must contain the current gameplay/chat experience.
-          Acceptance criteria:
-    - No `mode=""` branching remains as the primary page switch mechanism.
-    - Navigation between waiting state and game chat uses routes (`/` and `/game`).
+- [x] Remove staging in the lobby and directly show the daily challenge results if there are of the possibility to play the challenge.
+  `{stage === 'READY' ? (
+      <button
+        onClick={() => void continueFlow()}
+        disabled={isLoading || !sessionToken}
+        className="px-12 py-6 bg-black text-white text-2xl font-display font-black uppercase hover:bg-[#00FF00] hover:text-black transition-all border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50"
+      >
+        {isLoading ? 'Checking Daily...' : 'Continue'}
+      </button>
+    )`
+  Goal should be to remove the READY stage and directly show the step skipping the `continueFlow` completly. This will streamline the user experience and reduce unnecessary steps in the lobby.

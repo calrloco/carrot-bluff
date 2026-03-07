@@ -15,11 +15,8 @@ import {
 } from '@/lib/api';
 import { saveActiveGame } from '@/lib/active-game';
 
-type StartStage = 'READY' | 'DAILY_DONE';
-
 export default function CarrotLobby() {
   const router = useRouter();
-  const [stage, setStage] = useState<StartStage>('READY');
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [handle, setHandle] = useState('');
   const [handleDraft, setHandleDraft] = useState('');
@@ -41,6 +38,7 @@ export default function CarrotLobby() {
   }, []);
 
   async function init() {
+    setIsLoading(true);
     setError(null);
     try {
       const stored = typeof window !== 'undefined' ? localStorage.getItem('carrot_session_token') : null;
@@ -59,10 +57,32 @@ export default function CarrotLobby() {
       setHandleDraft(session.handle);
       setDailyBoard(daily);
       setInfiniteBoard(infinite);
-      setStage('READY');
+
+      const status = await getDailyStatus(session.session_token);
+      setHandle(status.handle);
+      setHandleDraft(status.handle);
+
+      if (!status.has_played_today) {
+        const res = await startGame({ mode: 'daily', session_token: session.session_token });
+        saveActiveGame({
+          gameId: res.game_id,
+          mode: res.mode,
+          role: res.role,
+          starter: res.starter,
+          playerBoxHasCarrot: res.player_box_has_carrot,
+          maxTurns: res.max_turns,
+          turn: res.turn,
+          initialAiMessage: res.ai_message,
+        });
+        router.push('/game');
+        return;
+      }
+
+      setDailyStatusResult(status.result);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to initialize');
-      setStage('READY');
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -71,7 +91,7 @@ export default function CarrotLobby() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await updateHandle(sessionwToken, handleDraft);
+      const res = await updateHandle(sessionToken, handleDraft);
       setHandle(res.handle);
       setHandleDraft(res.handle);
       setIsEditingHandle(false);
@@ -110,33 +130,6 @@ export default function CarrotLobby() {
     }
   }
 
-  async function continueFlow() {
-    if (!sessionToken) {
-      setError('Session not ready');
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      const status = await getDailyStatus(sessionToken);
-      setHandle(status.handle);
-      setHandleDraft(status.handle);
-
-      if (!status.has_played_today) {
-        await startMode('daily');
-        return;
-      }
-
-      setDailyStatusResult(status.result);
-      setStage('DAILY_DONE');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to check daily');
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
   const board = boardMode === 'daily' ? dailyBoard : infiniteBoard;
 
   return (
@@ -169,15 +162,7 @@ export default function CarrotLobby() {
               </div>
             </div>
 
-            {stage === 'READY' ? (
-              <button
-                onClick={() => void continueFlow()}
-                disabled={isLoading || !sessionToken}
-                className="px-12 py-6 bg-black text-white text-2xl font-display font-black uppercase hover:bg-[#00FF00] hover:text-black transition-all border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50"
-              >
-                {isLoading ? 'Checking Daily...' : 'Continue'}
-              </button>
-            ) : (
+            {dailyStatusResult ? (
               <div className="border-2 border-black bg-white p-4 text-left">
                 <div className="font-mono text-xs font-bold uppercase mb-2">Daily already completed today</div>
                 {dailyStatusResult && (
@@ -196,14 +181,18 @@ export default function CarrotLobby() {
                   >
                     {isLoading ? 'Starting...' : 'Play Infinite'}
                   </button>
-                  <button
-                    onClick={() => setStage('READY')}
-                    disabled={isLoading}
-                    className="px-6 py-3 bg-white text-black font-display font-black uppercase border-2 border-black hover:bg-black hover:text-white transition-all disabled:opacity-50"
-                  >
-                    Back
-                  </button>
                 </div>
+              </div>
+            ) : (
+              <div className="border-2 border-black bg-white p-4 text-left">
+                <div className="font-mono text-xs font-bold uppercase mb-2">Checking daily challenge...</div>
+                <button
+                  onClick={() => void init()}
+                  disabled={isLoading}
+                  className="px-6 py-3 bg-black text-white font-display font-black uppercase border-2 border-black hover:bg-[#00FF00] hover:text-black transition-all disabled:opacity-50"
+                >
+                  {isLoading ? 'Checking Daily...' : 'Retry'}
+                </button>
               </div>
             )}
 
